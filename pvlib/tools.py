@@ -10,7 +10,8 @@ import ast
 import re
 from six import string_types
 
-import numpy as np 
+import numpy as np
+import pandas as pd 
 import pytz
 
 
@@ -109,7 +110,7 @@ def localize_to_utc(time, location):
     
     Parameters
     ----------
-    time : datetime.datetime, pandas.DatetimeIndex, 
+    time : datetime.datetime, datetime.date, pandas.DatetimeIndex, 
            or pandas.Series/DataFrame with a DatetimeIndex.
     location : pvlib.Location object
     
@@ -124,6 +125,9 @@ def localize_to_utc(time, location):
         if time.tzinfo is None:
             time = pytz.timezone(location.tz).localize(time)
         time_utc = time.astimezone(pytz.utc)
+    elif isinstance(time, dt.date):
+        time = pytz.timezone(location.tz).localize(pd.Timestamp(time))
+        time_utc = time.astimezone(pytz.utc)
     else:
         try:
             time_utc = time.tz_convert('UTC')
@@ -132,7 +136,6 @@ def localize_to_utc(time, location):
             time_utc = time.tz_localize(location.tz).tz_convert('UTC')
             pvl_logger.debug('tz_localize to {} and then tz_convert to UTC'
                              .format(location.tz))
-        
         
     return time_utc
 
